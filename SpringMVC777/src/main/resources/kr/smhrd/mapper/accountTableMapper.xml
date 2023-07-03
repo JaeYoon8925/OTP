@@ -22,5 +22,19 @@ EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 		insert into COM.otpTable (id, otpCode, issueDate, expiredDate) 
 							value( #{id}, #{otpCode}, #{issueDate}, #{expiredDate} )
 	</insert>
+	
+	<select id="loginCntCheck" >
+		SELECT 
+		FROM accountTable 
+		WHERE id=#{id}
+	</select>
+	
+	<update id="loginCntPlus">
+	
+	</update>
+	
+	<update id="blockTimeUpdate">
+	
+	</update>
 
 </mapper>
