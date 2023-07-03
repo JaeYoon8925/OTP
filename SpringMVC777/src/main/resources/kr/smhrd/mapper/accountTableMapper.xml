@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//
+EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="kr.smhrd.mapper.accountTableMapper">
+
+	<select id="accountCheck"  parameterType="kr.smhrd.entity.accountTable" resultType="kr.smhrd.entity.accountTable">
+		SELECT blockTime 
+		FROM accountTable 
+		WHERE id=#{id}
+	</select>
+
+	<select id="login"  parameterType="kr.smhrd.entity.accountTable" resultType="kr.smhrd.entity.accountTable">
+		SELECT * 
+		FROM accountTable 
+		WHERE id=#{id} and pw=#{pw}
+	</select>
+
+	<insert id="otpCreate" parameterType="kr.smhrd.entity.otpTable">
+		insert into COM.otpTable (id, otpCode, issueDate, expiredDate) 
+							value( #{id}, #{otpCode}, #{issueDate}, #{expiredDate} )
+	</insert>
+
+</mapper>

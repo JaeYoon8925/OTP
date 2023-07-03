@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- schema에 대한 정의! schema == xml 파일에서 사용하고 싶은 태그를 정의해놓은 파일 -->
+	<!-- beans = DSgfrdsayth6h6h Spring Container -->
+
+
+
+	<!-- >> Spring 환경설정 (DB연결 설정 기술)을 하는 파일. -->
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<!-- 공유된, 모두에게 보이는 웹 컴포넌트 자원을 정의 함 -->
+	<!-- shared resources == DB -->
+	
+	<!-- 1) HikariConfig(DB연결을 위한 데이터 기술) 생성  -->
+	<!-- HikariConfig hikari = new HikariConfig(); >> 자바식 생성법인데 여긴 class 파일등이 아닌 xml 파일임 -->
+	<!-- hikariConfig.setXXXX(drivername); 
+		 hikariConfig.setXXXX(jdbcURL); 
+		 hikariConfig.setXXXX(username); 
+		 hikariConfig.setXXXX(password);  형식으로 설정 -->
+	<bean class="com.zaxxer.hikari.HikariConfig" id ="hikariConfig">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<!-- DataSourceExplorer - 연결된 com계정 선택 - properties - Driver Properties - jdbcurl -->
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/com" />
+		<property name="username" value="com" />
+		<property name="password" value="com01" />
+	</bean>
+
+	<!-- 2) DBCP 생성 : HikariDataSource -->
+	<!--  HikariDataSource dataSource = new HikariDataSource(); -->
+	<bean class="com.zaxxer.hikari.HikariDataSource" id="dataSource">
+		<!-- hikariConfig 참조할거에요~ -->
+		<constructor-arg ref="hikariConfig"/>	
+	</bean>
+	
+	
+	<!-- 3) SqlSessionFatoryBean 객체 생성-->
+	<!-- : Connection 객체를 빌려서 사용하는 객체 / 재사용 안할거면 id로 변수선언해주지않아도 됌. -->
+	<!-- : 내가 만들어둔 Mapper interface 구현체 역할을 담당함. -->
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+		<!-- = .setDataSource(dataSource) dataSource라고 이름붙인 DBCP(HikariDataSource)를 참조할거에요~ / setName(ref) -->
+		<property name="dataSource" ref="dataSource"/>
+		
+	</bean>
+	
+	<!-- 4) 구현해야하는 mapper 파일의 위치 등록하기. -->
+	<mybatis-spring:scan base-package="kr.smhrd.mapper"/>
+	
+	
+	
+	
+	<!-- 
+	3)SqlSessionFatoryBean만 만들어두면 이 새끼가 아래의 코드를 자동으로 다 해줌. 
+ 
+		public class SqlSessionFactoryBean implements BoardMapper{
+			
+			@Override
+			public ArrayList<Board> getlist(){
+				session.selectList(getList);
+				return list;
+			}
+			
+		}
+		
+		SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+		
+		4) 그래도 mapper가 어딧는지알아야하니 4번 작업도 해줘야함.
+	 -->
+	
+	
+	
+</beans>
+
