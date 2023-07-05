@@ -18,10 +18,11 @@
 <div class="container">
   <h2>otp 입력해라, ${account.name}</h2>
   <h2>otp번호다. ${otp.otpCode}</h2>
-  <form action="login"	method="get">
+  <form action="otpInput"	method="get">
     <div class="form-group">
       <label for="email">OTP:</label>
-      <input type="email" class="form-control" id="id" placeholder="Enter email" name="otp">
+      <input type="text" placeholder="Enter otp" name="otpCode">
+      <input type="hidden" name="id" value=${account.id}>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>

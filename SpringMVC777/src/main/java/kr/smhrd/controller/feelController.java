@@ -35,6 +35,8 @@ public class feelController {
 	public String index(accountTable account, Model model) {
 
 		String goal = "otpPage";
+		// 로그인 카운트 확인
+		int cntCheck = mapper.loginCntCheck(account);
 
 		// 두 Date 값을 비교하기 위해 포맷 통일을 위한 정의
 //		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -79,8 +81,7 @@ public class feelController {
 				goal = "loginPage"; // 로그인 실패 시 로그인 페이지에 그대로 있는 것처럼 ㅇㅇ
 			}
 
-			// 로그인 카운트 확인
-			int cntCheck = mapper.loginCntCheck(account);
+			
 			System.out.println("로그인 카운트 확인" + cntCheck);
 			cntCheck++;
 
@@ -95,8 +96,8 @@ public class feelController {
 				
 				cntCheck = 1;
 				account.setLoginCnt(cntCheck);
-				System.out.println("else if (blockResult <= 0 && 5 < cntCheck)" + account.getLoginCnt());
 				mapper.loginCntUpdate(account);
+				
 				if (info == null) {
 					goal = "loginPage";
 				}
@@ -107,17 +108,25 @@ public class feelController {
 				blockUp.add(Calendar.MINUTE, 10); // 분 연산
 				Date blockUpDate = new Date(cal1.getTimeInMillis());
 				account.setBlockTime(blockUpDate);
-				mapper.blockTimeUpdate(blockUpDate);
+				mapper.blockTimeUpdate(account);
 				
 				account.setLoginCnt(cntCheck);
 				System.out.println(account.getLoginCnt());
 				mapper.loginCntUpdate(account);
 
-				System.out.println("로그인 횟수 제한에 걸렸습니다.");
+				
+				System.out.println("로그인 횟수 제한에 걸렸습니다." + blockUpDate);
 				goal = "loginPage";
 
 			} else { // 블록타임에도 걸리고 로그인 카운트도 5회 초과 = 로그인 시도 불가
-				System.out.println("지금은 블록타임 기간 내 입니다.");
+				
+				Calendar blockUp = Calendar.getInstance();
+				blockUp.add(Calendar.MINUTE, 10); // 분 연산
+				Date blockUpDate = new Date(cal1.getTimeInMillis());
+				account.setBlockTime(blockUpDate);
+				mapper.blockTimeUpdate(account);
+				
+				System.out.println("지금은 블록타임 기간 내 입니다." + blockUpDate);
 				goal = "loginPage";
 			}
 			// 그 외의 모든 경우. ( 로그인 카운트에 무관하게 블록타임에 걸리는 경우 )
@@ -164,11 +173,22 @@ public class feelController {
 
 				System.out.println(otpCodeBind);
 				// 오티피 테이블에 행 추가 (오티피 발급)
-				int otpCode = mapper.otpCreate(otpCodeBind);
+				
+				// 발급하기 전에 이 아이디로 발급된 이전 otp들이 있으면 전부 제거해주면 더 좋을듯 한데 귀찮으니 패스.
+//				mapper.otpDelete(otpCodeBind);
+				
+				mapper.otpCreate(otpCodeBind);
 				// , issueDate, expiredDate
-				System.out.println("실행1");
 				model.addAttribute("otp", otpCodeBind);
-				System.out.println("실행2");
+				
+				// 로그인에 성공했으니 카운트 초기화
+				cntCheck = 0;
+				account.setLoginCnt(cntCheck);
+				mapper.loginCntUpdate(account);
+				System.out.println("로그인 성공" + " 초기화 된 cntCheck : "+ account.getLoginCnt() );
+				
+				
+				
 //			// 로그인 실패 > 블로타임 내 , 외 (신경써야할까?, 신경써야함.)
 //			// 로그인 블록여부 확인 (아이디의 존재 여부는 체크 해줘야함.)
 //			// 아이디 조차 존재 x 시.
@@ -193,12 +213,31 @@ public class feelController {
 			// 로그인 실패 info = null
 			else {
 				// 로그인 카운트 +1 업데이트 문 은 위에 있음
+				System.out.println("비밀번호 오류 / 로그인실패");
 				goal = "loginPage";
 			}
 
 		}
 
 		return goal; // 리턴값 변경 필요
+	}
+	
+	@RequestMapping(value = "/otpInput", method = RequestMethod.GET) // UrlMapping , 요청명 , Get 방식으로 들어왔을 때 실행
+	public String otp(otpTable otp, Model model) {
+		String goal = "";
+		
+		int otpPut = mapper.otpCheck(otp);
+		
+		if ( otpPut == 1 ) { // 아마 select 문으로 출력이 된 경우 1이 나옴 >> 성공한거니까 otp 제거 해야함.
+			
+			mapper.otpDelete(otp);
+			
+			
+		}
+		
+		
+		
+		return goal;
 	}
 
 }

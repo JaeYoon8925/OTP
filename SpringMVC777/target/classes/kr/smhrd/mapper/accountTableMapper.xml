@@ -35,10 +35,23 @@ EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 		WHERE ID=#{id}
 	</update>
 	
-	<update id="blockTimeUpdate">
+	<update id="blockTimeUpdate" parameterType="kr.smhrd.entity.accountTable">
 		UPDATE accountTable 
 		SET blockTime=#{blockTime}
 		WHERE ID=#{id}
 	</update>
+	
+	<select id="otpCheck"  parameterType="kr.smhrd.entity.otpTable" resultType="int">
+		SELECT * 
+		FROM otpTable 
+		WHERE id=#{id} and otpCode=#{otpCode}
+	</select>
+	
+	<delete id="otpDelete" parameterType="kr.smhrd.entity.otpTable">
+		DELETE
+		FROM otpTable
+		WHERE id=#{id} and otpCode=#{otpCode}
+	</delete>
+	
 
 </mapper>
