@@ -27,10 +27,7 @@ public interface accountTableMapper {
 	// 로그인 카운트 조회
 	public int loginCntCheck(accountTable account);
 	// 로그인 카운트 +
-	public int loginCntPlus(accountTable account);
-	// 로그인 카운트 리셋
-	public int loginCntReset(accountTable account);
-
+	public void loginCntUpdate(accountTable account);
 	// 블록타임 업데이트
 	public int blockTimeUpdate(Date blockUpDate);
 	

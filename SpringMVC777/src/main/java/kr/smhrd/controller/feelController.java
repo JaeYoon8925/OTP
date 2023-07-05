@@ -48,60 +48,88 @@ public class feelController {
 		// 로그인 시도
 		System.out.println("로그인 시도");
 		accountTable check = mapper.accountCheck(account);
-		// 로그인 실패시 info 는 null이 리턴됌.
 
-		// 계정 존재 확인 > 계정 블록타임 확인
-		// >> 셀렉트문으로 blocktime을 가져와야함.
+		accountTable info = mapper.login(account);
 
-		// 계정 내 블록 타임
-		Date blockTime = check.getBlockTime();
-		System.out.println("계정의 블록타임 : " + blockTime);
+		if (check != null) {
+			// 아이디가 존재 하지 않으면 check는 null
+			// 로그인 실패시 info 는 null이 리턴됌.
 
-		// 현재 시간 = date
+			// 계정 존재 확인 > 계정 블록타임 확인
+			// >> 셀렉트문으로 blocktime을 가져와야함.
 
-		System.out.println("자바에서 구한 현재 시간 : " + date);
+			// 계정 내 블록 타임
+			Date blockTime = check.getBlockTime();
+			System.out.println("계정의 블록타임 : " + blockTime);
 
-		// 시간 비교 ( 0 이하 = 블록타임이 지난 후 / 0 초과 = 블록 타임이 지나기 전)
-		int blockResult = blockTime.compareTo(date);
-		// 블록타임 체크 + 로그인 카운트 체크도 동시에 해줘야 함.
-		if (blockResult <= 0) { // 0 이하 = 블록타임이 지난 후
-			System.out.println("블록타임 후"); // 문제 없이 로그인 로직 진행.
+			// 현재 시간 = date
+			System.out.println("자바에서 구한 현재 시간 : " + date);
+
+			// 시간 비교 ( 0 이하 = 블록타임이 지난 후 / 0 초과 = 블록 타임이 지나기 전)
+			int blockResult = blockTime.compareTo(date);
+			// 블록타임 체크 + 로그인 카운트 체크도 동시에 해줘야 함.
+
+			if (blockResult <= 0) { // 0 이하 = 블록타임이 지난 후
+				System.out.println("블록타임 후"); // 문제 없이 로그인 로직 진행.
 //			int loginCntResetsResult = mapper.loginCntReset(account);
-		} else { // 0 초과 = 블록타임이 지나기 전
-			System.out.println("블록타임 중");
-			System.out.println("로그인 시도 불가능.");
-			goal = "loginPage"; // 로그인 실패 시 로그인 페이지에 그대로 있는 것처럼 ㅇㅇ
-		}
 
-		// 로그인 카운트 확인
-		int cntCheck = mapper.loginCntCheck(account);
+			} else { // 0 초과 = 블록타임이 지나기 전
+				System.out.println("블록타임 중");
+				System.out.println("로그인 시도 불가능.");
+				goal = "loginPage"; // 로그인 실패 시 로그인 페이지에 그대로 있는 것처럼 ㅇㅇ
+			}
 
-		// 블록 타임에 안걸리고 로그인 카운트가 5회 이하인 경우 = 카운트++
-		if (blockResult <= 0 && cntCheck <= 5) {
+			// 로그인 카운트 확인
+			int cntCheck = mapper.loginCntCheck(account);
+			System.out.println("로그인 카운트 확인" + cntCheck);
 			cntCheck++;
 
-			// 블록 타임에 안걸리고 로그인 카운트가 5회 초과인 경우 = 블록타임 갱신 = 현재시간 +10분
-		} else if (blockResult <= 0 && 5 < cntCheck) {
-			Calendar blockUp = Calendar.getInstance();
-			blockUp.add(Calendar.MINUTE, 10); // 분 연산
-			Date blockUpDate = new Date(cal1.getTimeInMillis());
-			mapper.blockTimeUpdate(blockUpDate);
+			// 블록 타임에도 안걸리고 로그인 카운트가 5회 이하인 경우 = 카운트++
+			if (blockResult <= 0 && cntCheck < 5) {
+				account.setLoginCnt(cntCheck);
+				System.out.println(account.getLoginCnt());
+				mapper.loginCntUpdate(account);
 
-			System.out.println("로그인 횟수 제한에 걸렸습니다.");
-			goal = "loginPage";
+				// 블록 타임에는 안걸리지만, 로그인 카운트가 5회 초과인 경우 = 로그인 카운트만 초기화 해주고 로그인 재시도.
+			} else if (blockResult <= 0 && 5 < cntCheck) {
+				
+				cntCheck = 1;
+				account.setLoginCnt(cntCheck);
+				System.out.println("else if (blockResult <= 0 && 5 < cntCheck)" + account.getLoginCnt());
+				mapper.loginCntUpdate(account);
+				if (info == null) {
+					goal = "loginPage";
+				}
+
+			} else if (cntCheck == 5 && info == null) { // 로그인 카운트가 5가 된 순간 로그인에 실패했으면 블록 타임 갱신
+
+				Calendar blockUp = Calendar.getInstance();
+				blockUp.add(Calendar.MINUTE, 10); // 분 연산
+				Date blockUpDate = new Date(cal1.getTimeInMillis());
+				account.setBlockTime(blockUpDate);
+				mapper.blockTimeUpdate(blockUpDate);
+				
+				account.setLoginCnt(cntCheck);
+				System.out.println(account.getLoginCnt());
+				mapper.loginCntUpdate(account);
+
+				System.out.println("로그인 횟수 제한에 걸렸습니다.");
+				goal = "loginPage";
+
+			} else { // 블록타임에도 걸리고 로그인 카운트도 5회 초과 = 로그인 시도 불가
+				System.out.println("지금은 블록타임 기간 내 입니다.");
+				goal = "loginPage";
+			}
 			// 그 외의 모든 경우. ( 로그인 카운트에 무관하게 블록타임에 걸리는 경우 )
+
 		} else {
-			
-			System.out.println("지금은 블록타임 기간 내 입니다.");
+			System.out.println("아이디가 존재하지 않습니다.");
 			goal = "loginPage";
 		}
 
-		
-		
 		// 블록타임과 카운트를 모두 만족하면 goal이 처음 선언한 otpPage 그대로임. >> 로그인 시도
 		if (goal == "otpPage") {
 
-			accountTable info = mapper.login(account);
 			// 로그인 성공
 			if (info != null) {
 				// 로그인 카운트 초기화 업데이트 문
@@ -164,8 +192,8 @@ public class feelController {
 
 			// 로그인 실패 info = null
 			else {
-				// 로그인 카운트 +1 업데이트 문
-
+				// 로그인 카운트 +1 업데이트 문 은 위에 있음
+				goal = "loginPage";
 			}
 
 		}

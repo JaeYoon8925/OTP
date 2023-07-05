@@ -23,18 +23,22 @@ EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 							value( #{id}, #{otpCode}, #{issueDate}, #{expiredDate} )
 	</insert>
 	
-	<select id="loginCntCheck" >
-		SELECT 
+	<select id="loginCntCheck" resultType="int">
+		SELECT loginCnt
 		FROM accountTable 
 		WHERE id=#{id}
 	</select>
 	
-	<update id="loginCntPlus">
-	
+	<update id="loginCntUpdate" parameterType="kr.smhrd.entity.accountTable">
+		UPDATE accountTable 
+		SET loginCnt=#{loginCnt} 
+		WHERE ID=#{id}
 	</update>
 	
 	<update id="blockTimeUpdate">
-	
+		UPDATE accountTable 
+		SET blockTime=#{blockTime}
+		WHERE ID=#{id}
 	</update>
 
 </mapper>
