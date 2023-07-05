@@ -72,83 +72,75 @@ public class feelController {
 			System.out.println("로그인 시도 불가능.");
 			goal = "loginPage"; // 로그인 실패 시 로그인 페이지에 그대로 있는 것처럼 ㅇㅇ
 		}
-		
+
 		// 로그인 카운트 확인
 		int cntCheck = mapper.loginCntCheck(account);
-		
+
 		// 블록 타임에 안걸리고 로그인 카운트가 5회 이하인 경우 = 카운트++
 		if (blockResult <= 0 && cntCheck <= 5) {
 			cntCheck++;
-			
-		// 블록 타임에 안걸리고 로그인 카운트가 5회 초과인 경우 = 블록타임 갱신 = 현재시간 +10분
-		} else if ( blockResult <= 0 && 5 < cntCheck ) {
+
+			// 블록 타임에 안걸리고 로그인 카운트가 5회 초과인 경우 = 블록타임 갱신 = 현재시간 +10분
+		} else if (blockResult <= 0 && 5 < cntCheck) {
 			Calendar blockUp = Calendar.getInstance();
 			blockUp.add(Calendar.MINUTE, 10); // 분 연산
 			Date blockUpDate = new Date(cal1.getTimeInMillis());
 			mapper.blockTimeUpdate(blockUpDate);
-			
+
+			System.out.println("로그인 횟수 제한에 걸렸습니다.");
 			goal = "loginPage";
-		// 그 외의 모든 경우. ( 로그인 카운트에 무관하게 블록타임에 걸리는 경우 )
+			// 그 외의 모든 경우. ( 로그인 카운트에 무관하게 블록타임에 걸리는 경우 )
 		} else {
+			
+			System.out.println("지금은 블록타임 기간 내 입니다.");
 			goal = "loginPage";
 		}
+
 		
 		
-		// 블록타임과 카운트를 모두 만족하면 goal이 처음 선언한 otpPage 그대로임.
+		// 블록타임과 카운트를 모두 만족하면 goal이 처음 선언한 otpPage 그대로임. >> 로그인 시도
 		if (goal == "otpPage") {
-			
-		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		accountTable info = mapper.login(account);
-		// 로그인 성공
-		if (info != null) {
-			// 로그인 카운트 초기화 업데이트 문
 
-			// 오티피 발급 문
-			String id = info.getId();
+			accountTable info = mapper.login(account);
+			// 로그인 성공
+			if (info != null) {
+				// 로그인 카운트 초기화 업데이트 문
 
-			// 모델에 로그인 정보 저장.
-			model.addAttribute("account", info);
+				// 오티피 발급 문
+				String id = info.getId();
 
-			// 랜덤 오티피 생성 로직
-			Random random = new Random();
-			String otp = "";
+				// 모델에 로그인 정보 저장.
+				model.addAttribute("account", info);
 
-			for (int i = 1; i < 9; i++) {
-				otp = otp + String.valueOf(random.nextInt(10));
-			}
+				// 랜덤 오티피 생성 로직
+				Random random = new Random();
+				String otp = "";
+
+				for (int i = 1; i < 9; i++) {
+					otp = otp + String.valueOf(random.nextInt(10));
+				}
 
 //			String issueDate = formatter.format(date);
 //			String expiredDate = formatter.format(calDate);
 
-			System.out.println("로그인 id : " + id);
-			System.out.println("오티피 발급 : " + otp);
-			System.out.println(date);
-			System.out.println(calDate);
+				System.out.println("로그인 id : " + id);
+				System.out.println("오티피 발급 : " + otp);
+				System.out.println(date);
+				System.out.println(calDate);
 
-			otpTable otpCodeBind = new otpTable();
-			otpCodeBind.setId(id);
-			otpCodeBind.setOtpCode(otp);
-			otpCodeBind.setIssueDate(date);
-			otpCodeBind.setExpiredDate(calDate);
+				otpTable otpCodeBind = new otpTable();
+				otpCodeBind.setId(id);
+				otpCodeBind.setOtpCode(otp);
+				otpCodeBind.setIssueDate(date);
+				otpCodeBind.setExpiredDate(calDate);
 
-			System.out.println(otpCodeBind);
-			// 오티피 테이블에 행 추가 (오티피 발급)
-			int otpCode = mapper.otpCreate(otpCodeBind);
-			// , issueDate, expiredDate
-			System.out.println("실행1");
-			model.addAttribute("otp", otpCodeBind);
-			System.out.println("실행2");
+				System.out.println(otpCodeBind);
+				// 오티피 테이블에 행 추가 (오티피 발급)
+				int otpCode = mapper.otpCreate(otpCodeBind);
+				// , issueDate, expiredDate
+				System.out.println("실행1");
+				model.addAttribute("otp", otpCodeBind);
+				System.out.println("실행2");
 //			// 로그인 실패 > 블로타임 내 , 외 (신경써야할까?, 신경써야함.)
 //			// 로그인 블록여부 확인 (아이디의 존재 여부는 체크 해줘야함.)
 //			// 아이디 조차 존재 x 시.
@@ -156,23 +148,25 @@ public class feelController {
 //			// 성공시
 //				// 로그인 정보 받아오기 (뷰에는 아이디만 출력 + otp 입력폼)
 //				model.addAttribute("vo", info);
-			//
+				//
 //				// otp 번호 무작위로 생성 ( id, otpCode, issueDate, expiredDate )
 //				// otpTable 에 insert문 작동
 //				// 오티피입력 페이지로
-			//
+				//
 //			// 실패시
 //				// blockTime 과 systime 을 비교
 //				// loginCnt +1
 //				// 다시 원페이지로 / 알람만 띄우기.
 //				
-			//
+				//
 
-		}
+			}
 
-		// 로그인 실패 info = null
-		else {
-			// 로그인 카운트 +1 업데이트 문
+			// 로그인 실패 info = null
+			else {
+				// 로그인 카운트 +1 업데이트 문
+
+			}
 
 		}
 
